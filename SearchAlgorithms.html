@@ -114,6 +114,12 @@
         background-color: #cc7c00;
       }
 
+      .placing-ct {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
       .btn-placing {
         padding: 6px 8px;
         margin: 4px 0;
@@ -174,7 +180,7 @@
           10,
           15px
         ); /* Adjust the grid size as needed */
-        grid-gap: 2px;
+        grid-gap: 1px;
       }
 
       .grid-cell {
@@ -218,7 +224,7 @@
           Variable to track if the mouse button is pressed 
           for obstacle drawing
         */
-        let isDrawing = false;
+        let mouseIsPressed = false;
 
         // Stops any functions running
         function stopExecution() {
@@ -235,16 +241,25 @@
           gridContainer.innerHTML = "";
 
           /*
-              Change the grid-template-columns based on
-              user input to retain correct column number
-            */
+            Change the grid-template-columns based on
+            user input to retain correct column number
+          */
           gridContainer.style.gridTemplateColumns = `repeat(${ySize}, 15px)`;
 
           for (let i = 0; i < xSize; i++) {
             for (let j = 0; j < ySize; j++) {
               const cell = document.createElement("div");
               cell.className = "grid-cell";
+              cell.setAttribute("cell-X", i);
+              cell.setAttribute("cell-Y", j);
               gridContainer.appendChild(cell);
+
+              // Paint the first cell as the start and the last cell as the end
+              if (i === 0 && j === 0) {
+                cell.classList.add("start");
+              } else if (i === xSize - 1 && j === ySize - 1) {
+                cell.classList.add("end");
+              }
             }
           }
         }
@@ -258,7 +273,7 @@
 
         // Handle obstacles drawing with mouseover
         function drawObstacle(cell) {
-          if (isDrawing && placementType === "obstacles") {
+          if (mouseIsPressed && placementType === "obstacles") {
             cell.classList.remove("start", "end");
             cell.classList.add("obstacle");
           }
@@ -279,9 +294,26 @@
           });
         }
 
+        // Function to update start or end coordinates
+        function updateCoordinates(type, x, y) {
+          if (type === "start") {
+            startX = x;
+            startY = y;
+            document.getElementById("startX").textContent = startX;
+            document.getElementById("startY").textContent = startY;
+          } else if (type === "end") {
+            endX = x;
+            endY = y;
+            document.getElementById("endX").textContent = endX;
+            document.getElementById("endY").textContent = endY;
+          }
+        }
+
         // ----------------------------
         // Event Listeners declarations
         // ----------------------------
+
+        // Event listener for the generate grid button
         document
           .getElementById("btnGridGenerator")
           .addEventListener("click", () => {
@@ -289,15 +321,16 @@
             generateGrid();
           });
 
+        // Event listener for search delay input
         document
           .getElementById("inputTimeout")
           .addEventListener("input", setSearchDelay);
 
         // Event listeners for placement buttons
         document.querySelectorAll(".btn-placing").forEach((button) => {
-          button.addEventListener("click", (event) => {
-            placementType = event.target.getAttribute("data-placement-type");
-            // console.log(event);
+          button.addEventListener("click", (e) => {
+            placementType = e.target.getAttribute("data-placement-type");
+            // console.log(e);
             // console.log(placementType);
           });
         });
@@ -306,40 +339,54 @@
         document
           .getElementById("gridContainer")
           .addEventListener("mousedown", () => {
-            isDrawing = true;
+            mouseIsPressed = true;
           });
-
         // Event listener to stop drawing when mouse button is released
         document.addEventListener("mouseup", () => {
-          isDrawing = false;
+          mouseIsPressed = false;
         });
-
         // Event listener for mousemove to draw obstacles while moving the mouse
         document
           .getElementById("gridContainer")
-          .addEventListener("mousemove", (event) => {
-            const cell = event.target;
+          .addEventListener("mousemove", (e) => {
+            const cell = e.target;
             if (cell.classList.contains("grid-cell")) {
               drawObstacle(cell);
             }
           });
 
+        // Event listener for mouse right-click (contextmenu)
         document
           .getElementById("gridContainer")
-          .addEventListener("click", (event) => {
-            const cell = event.target;
+          .addEventListener("contextmenu", (e) => {
+            // Prevent the context menu from appearing
+            e.preventDefault();
+            const cell = e.target;
+            if (cell.classList.contains("grid-cell")) {
+              cell.classList.remove("obstacle");
+            }
+          });
+
+        document
+          .getElementById("gridContainer")
+          .addEventListener("click", (e) => {
+            const cell = e.target;
             if (cell.classList.contains("grid-cell")) {
               // Set the background color based on the placement type
+              const cellX = cell.getAttribute("cell-X");
+              const cellY = cell.getAttribute("cell-Y");
               switch (placementType) {
                 case "start":
                   clearStartOrEnd();
                   cell.classList.remove("end", "obstacle");
                   cell.classList.add("start");
+                  updateCoordinates(placementType, cellX, cellY);
                   break;
                 case "end":
                   clearStartOrEnd();
                   cell.classList.remove("start", "obstacle");
                   cell.classList.add("end");
+                  updateCoordinates(placementType, cellX, cellY);
                   break;
                 case "obstacles":
                   cell.classList.remove("start", "end");
@@ -355,6 +402,7 @@
         // ---------------------------
         // Generates grid on page load
         generateGrid();
+        // ---------------------------
       });
     </script>
   </head>
@@ -376,12 +424,26 @@
           <button id="btnGridGenerator">Generate Grid</button>
         </div>
         <div class="aside-row">
-          <button class="btn-placing blue" data-placement-type="start">
-            Place Start
-          </button>
-          <button class="btn-placing red" data-placement-type="end">
-            Place End
-          </button>
+          <div class="placing-ct">
+            <button class="btn-placing blue" data-placement-type="start">
+              Place Start
+            </button>
+            <div>
+              <span id="startX">0</span>
+              <span>,</span>
+              <span id="startY">0</span>
+            </div>
+          </div>
+          <div class="placing-ct">
+            <button class="btn-placing red" data-placement-type="end">
+              Place End
+            </button>
+            <div>
+              <span id="endX">30</span>
+              <span>,</span>
+              <span id="endY">30</span>
+            </div>
+          </div>
           <button class="btn-placing gray" data-placement-type="obstacles">
             Place Obstacles
           </button>
