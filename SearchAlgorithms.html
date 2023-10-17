@@ -95,6 +95,9 @@
         padding: 2px 0;
         text-align: justify;
       }
+      .hints.small {
+        font-size: 0.5rem;
+      }
 
       input[type="number"] {
         height: 28px;
@@ -456,17 +459,18 @@
               <span id="goalY">30</span>
             </div>
           </div>
-          <span class="hints"
-            >Click the button and then the cell you want to set as the start or
-            goal.</span
-          >
+          <span class="hints">
+            Click the button and then the cell you want to set as the start or
+            goal.
+          </span>
           <button class="btn-placing gray" data-placement-type="obstacles">
             Place Obstacles
           </button>
-          <span class="hints"
-            >To add obstacles, use the left click, to remove, use the right
-            click. You can drag the mouse.</span
-          >
+          <span class="hints">
+            To add obstacles, use the left click, to remove, use the right
+            click. You can drag the mouse.
+          </span>
+          <span class="hints small">Sometimes, the drag becomes buggy. I don't know why.</span>
         </div>
         <div class="aside-row">
           <label for="inputTimeout">Search Delay:</label>
