@@ -89,6 +89,13 @@
         margin-bottom: 5px;
       }
 
+      .hints {
+        font-size: 0.8rem;
+        display: inline-block;
+        padding: 2px 0;
+        text-align: justify;
+      }
+
       input[type="number"] {
         height: 28px;
         padding: 4px 4px 3px;
@@ -197,7 +204,7 @@
         color: #fff;
       }
 
-      .grid-cell.end {
+      .grid-cell.goal {
         background-color: #dc3545;
         color: #fff;
       }
@@ -254,11 +261,11 @@
               cell.setAttribute("cell-Y", j);
               gridContainer.appendChild(cell);
 
-              // Paint the first cell as the start and the last cell as the end
+              // Paint the first cell as the start and the last cell as the goal
               if (i === 0 && j === 0) {
                 cell.classList.add("start");
               } else if (i === xSize - 1 && j === ySize - 1) {
-                cell.classList.add("end");
+                cell.classList.add("goal");
               }
             }
           }
@@ -272,40 +279,44 @@
         }
 
         // Handle obstacles drawing with mouseover
-        function drawObstacle(cell) {
+        function drawObstacle(cell, mouseButton) {
           if (mouseIsPressed && placementType === "obstacles") {
-            cell.classList.remove("start", "end");
-            cell.classList.add("obstacle");
+            cell.classList.remove("start", "goal");
+            if (mouseButton === 1) {
+              cell.classList.add("obstacle");
+            } else if (mouseButton === 2) {
+              cell.classList.remove("obstacle");
+            }
           }
         }
 
-        // Function to clear existing start or end points
-        function clearStartOrEnd() {
+        // Function to clear existing start or goal points
+        function clearStartOrGoal() {
           const cells = document.querySelectorAll(".grid-cell");
           cells.forEach((cell) => {
             if (placementType === "start" && cell.classList.contains("start")) {
               cell.classList.remove("start");
             } else if (
-              placementType === "end" &&
-              cell.classList.contains("end")
+              placementType === "goal" &&
+              cell.classList.contains("goal")
             ) {
-              cell.classList.remove("end");
+              cell.classList.remove("goal");
             }
           });
         }
 
-        // Function to update start or end coordinates
+        // Function to update start or goal coordinates
         function updateCoordinates(type, x, y) {
           if (type === "start") {
             startX = x;
             startY = y;
             document.getElementById("startX").textContent = startX;
             document.getElementById("startY").textContent = startY;
-          } else if (type === "end") {
-            endX = x;
-            endY = y;
-            document.getElementById("endX").textContent = endX;
-            document.getElementById("endY").textContent = endY;
+          } else if (type === "goal") {
+            goalX = x;
+            goalY = y;
+            document.getElementById("goalX").textContent = goalX;
+            document.getElementById("goalY").textContent = goalY;
           }
         }
 
@@ -351,7 +362,7 @@
           .addEventListener("mousemove", (e) => {
             const cell = e.target;
             if (cell.classList.contains("grid-cell")) {
-              drawObstacle(cell);
+              drawObstacle(cell, e.buttons);
             }
           });
 
@@ -377,19 +388,19 @@
               const cellY = cell.getAttribute("cell-Y");
               switch (placementType) {
                 case "start":
-                  clearStartOrEnd();
-                  cell.classList.remove("end", "obstacle");
+                  clearStartOrGoal();
+                  cell.classList.remove("goal", "obstacle");
                   cell.classList.add("start");
                   updateCoordinates(placementType, cellX, cellY);
                   break;
-                case "end":
-                  clearStartOrEnd();
+                case "goal":
+                  clearStartOrGoal();
                   cell.classList.remove("start", "obstacle");
-                  cell.classList.add("end");
+                  cell.classList.add("goal");
                   updateCoordinates(placementType, cellX, cellY);
                   break;
                 case "obstacles":
-                  cell.classList.remove("start", "end");
+                  cell.classList.remove("start", "goal");
                   cell.classList.add("obstacle");
                   break;
                 default:
@@ -434,19 +445,28 @@
               <span id="startY">0</span>
             </div>
           </div>
+
           <div class="placing-ct">
-            <button class="btn-placing red" data-placement-type="end">
-              Place End
+            <button class="btn-placing red" data-placement-type="goal">
+              Place Goal
             </button>
             <div>
-              <span id="endX">30</span>
+              <span id="goalX">30</span>
               <span>,</span>
-              <span id="endY">30</span>
+              <span id="goalY">30</span>
             </div>
           </div>
+          <span class="hints"
+            >Click the button and then the cell you want to set as the start or
+            goal.</span
+          >
           <button class="btn-placing gray" data-placement-type="obstacles">
             Place Obstacles
           </button>
+          <span class="hints"
+            >To add obstacles, use the left click, to remove, use the right
+            click. You can drag the mouse.</span
+          >
         </div>
         <div class="aside-row">
           <label for="inputTimeout">Search Delay:</label>
