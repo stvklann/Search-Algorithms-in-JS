@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,300;1,400;1,500;1,600;1,700;1,900&display=swap"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,300;1,400;1,500;1,600;1,700;1,900&display=swap"
+      rel="stylesheet"
+    />
+    <title>Grid Search Visualization</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", Arial, sans-serif;
+        font-size: 1.25rem;
+      }
+
+      .container {
+        min-height: calc(100vh - 40px);
+        padding: 20px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+      }
+
+      header {
+        position: relative;
+      }
+
+      .logo {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        height: auto;
+        width: 48px;
+      }
+
+      aside {
+        min-height: inherit;
+        min-width: 240px;
+        width: 240px;
+        padding: 0 20px 20px 0;
+        border-right: 1px solid #ccc;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        margin-bottom: 12px;
+      }
+
+      .aside-row {
+        margin-bottom: 16px;
+      }
+
+      .aside-row__col {
+        display: flex;
+        flex-flow: row wrap;
+        margin-bottom: 20px;
+        justify-content: space-between;
+      }
+
+      .grid-inputs {
+        display: flex;
+        align-items: center;
+      }
+
+      .grid-inputs * {
+        margin: 0 2px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      input[type="number"] {
+        height: 28px;
+        padding: 4px 4px 3px;
+        width: 52px;
+      }
+
+      input[type="number"]#inputTimeout {
+        width: 80px;
+      }
+
+      button {
+        padding: 8px 16px;
+        background-color: #ff9b00;
+        font-size: 1.125rem;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        display: block;
+        border-radius: 6px;
+        transition: background-color 300ms;
+      }
+      button:hover {
+        background-color: #cc7c00;
+      }
+
+      .btn-placing {
+        padding: 6px 8px;
+        margin: 4px 0;
+        font-size: 1rem;
+      }
+
+      .btn-placing.blue {
+        background-color: #0d6efd;
+      }
+      .btn-placing.blue:hover {
+        background-color: #0057b4;
+      }
+
+      .btn-placing.red {
+        background-color: #dc3545;
+      }
+      .btn-placing.red:hover {
+        background-color: #a42834;
+      }
+
+      .btn-placing.gray {
+        background-color: #6c757d;
+      }
+      .btn-placing.gray:hover {
+        background-color: #4a5055;
+      }
+
+      button#btnStartSearch {
+        background-color: #28a745;
+      }
+      button#btnStartSearch:hover {
+        background-color: #19692c;
+      }
+
+      button#btnResetGrid {
+        background-color: #dc3545;
+        font-style: italic;
+        font-weight: 700;
+      }
+      button#btnResetGrid:hover {
+        background-color: #a42834;
+      }
+
+      select {
+        width: 100%;
+        padding: 5px;
+      }
+
+      main {
+        min-height: inherit;
+        padding: 20px;
+        flex-grow: 1;
+      }
+
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(
+          10,
+          15px
+        ); /* Adjust the grid size as needed */
+        grid-gap: 2px;
+      }
+
+      .grid-cell {
+        height: 15px;
+        width: 15px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        text-align: center;
+        line-height: 30px;
+      }
+
+      .grid-cell.start {
+        background-color: #0d6efd;
+        color: #fff;
+      }
+
+      .grid-cell.end {
+        background-color: #dc3545;
+        color: #fff;
+      }
+
+      .grid-cell.obstacle {
+        background-color: #6c757d;
+      }
+
+      .grid-cell.visited {
+        background-color: #93e1a5;
+      }
+
+      .grid-cell.path {
+        background-color: #28a745;
+      }
+    </style>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Default search delay
+        let searchDelay = 100;
+        // Default placement type
+        let placementType = "start";
+        /*
+          Variable to track if the mouse button is pressed 
+          for obstacle drawing
+        */
+        let isDrawing = false;
+
+        // Stops any functions running
+        function stopExecution() {
+          window.stop();
+        }
+
+        // Generates grid
+        function generateGrid() {
+          const xSize = parseInt(document.getElementById("xSize").value);
+          const ySize = parseInt(document.getElementById("ySize").value);
+
+          const gridContainer = document.getElementById("gridContainer");
+          // Clear any existing grid
+          gridContainer.innerHTML = "";
+
+          /*
+              Change the grid-template-columns based on
+              user input to retain correct column number
+            */
+          gridContainer.style.gridTemplateColumns = `repeat(${ySize}, 15px)`;
+
+          for (let i = 0; i < xSize; i++) {
+            for (let j = 0; j < ySize; j++) {
+              const cell = document.createElement("div");
+              cell.className = "grid-cell";
+              gridContainer.appendChild(cell);
+            }
+          }
+        }
+
+        // Sets Search Delay
+        function setSearchDelay() {
+          const inputTimeout = document.getElementById("inputTimeout");
+          searchDelay = parseInt(inputTimeout.value);
+          // console.log("Search Delay set to:", searchDelay, "ms");
+        }
+
+        // Handle obstacles drawing with mouseover
+        function drawObstacle(cell) {
+          if (isDrawing && placementType === "obstacles") {
+            cell.classList.remove("start", "end");
+            cell.classList.add("obstacle");
+          }
+        }
+
+        // Function to clear existing start or end points
+        function clearStartOrEnd() {
+          const cells = document.querySelectorAll(".grid-cell");
+          cells.forEach((cell) => {
+            if (placementType === "start" && cell.classList.contains("start")) {
+              cell.classList.remove("start");
+            } else if (
+              placementType === "end" &&
+              cell.classList.contains("end")
+            ) {
+              cell.classList.remove("end");
+            }
+          });
+        }
+
+        // ----------------------------
+        // Event Listeners declarations
+        // ----------------------------
+        document
+          .getElementById("btnGridGenerator")
+          .addEventListener("click", () => {
+            // Regenerate the grid when the button is clicked
+            generateGrid();
+          });
+
+        document
+          .getElementById("inputTimeout")
+          .addEventListener("input", setSearchDelay);
+
+        // Event listeners for placement buttons
+        document.querySelectorAll(".btn-placing").forEach((button) => {
+          button.addEventListener("click", (event) => {
+            placementType = event.target.getAttribute("data-placement-type");
+            // console.log(event);
+            // console.log(placementType);
+          });
+        });
+
+        // Event listener to start drawing when mouse button is pressed
+        document
+          .getElementById("gridContainer")
+          .addEventListener("mousedown", () => {
+            isDrawing = true;
+          });
+
+        // Event listener to stop drawing when mouse button is released
+        document.addEventListener("mouseup", () => {
+          isDrawing = false;
+        });
+
+        // Event listener for mousemove to draw obstacles while moving the mouse
+        document
+          .getElementById("gridContainer")
+          .addEventListener("mousemove", (event) => {
+            const cell = event.target;
+            if (cell.classList.contains("grid-cell")) {
+              drawObstacle(cell);
+            }
+          });
+
+        document
+          .getElementById("gridContainer")
+          .addEventListener("click", (event) => {
+            const cell = event.target;
+            if (cell.classList.contains("grid-cell")) {
+              // Set the background color based on the placement type
+              switch (placementType) {
+                case "start":
+                  clearStartOrEnd();
+                  cell.classList.remove("end", "obstacle");
+                  cell.classList.add("start");
+                  break;
+                case "end":
+                  clearStartOrEnd();
+                  cell.classList.remove("start", "obstacle");
+                  cell.classList.add("end");
+                  break;
+                case "obstacles":
+                  cell.classList.remove("start", "end");
+                  cell.classList.add("obstacle");
+                  break;
+                default:
+                  // Default case, do nothing
+                  break;
+              }
+            }
+          });
+
+        // ---------------------------
+        // Generates grid on page load
+        generateGrid();
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <img src="logo.png" alt="Logo" class="logo" />
+      <!-- Left Sidebar -->
+      <aside>
+        <h2>Search Setup</h2>
+        <div class="aside-row">
+          <label for="xSize">Grid Size:</label>
+          <div class="grid-inputs">
+            <input type="number" id="xSize" value="30" min="1" />
+            <span>X</span>
+            <input type="number" id="ySize" value="30" min="1" />
+          </div>
+        </div>
+        <div class="aside-row">
+          <button id="btnGridGenerator">Generate Grid</button>
+        </div>
+        <div class="aside-row">
+          <button class="btn-placing blue" data-placement-type="start">
+            Place Start
+          </button>
+          <button class="btn-placing red" data-placement-type="end">
+            Place End
+          </button>
+          <button class="btn-placing gray" data-placement-type="obstacles">
+            Place Obstacles
+          </button>
+        </div>
+        <div class="aside-row">
+          <label for="inputTimeout">Search Delay:</label>
+          <input type="number" id="inputTimeout" value="100" min="1" />
+          <span>ms</span>
+        </div>
+        <div class="aside-row">
+          <label for="searchAlgorithm">Algorithm:</label>
+          <select id="searchAlgorithm">
+            <option value="dijkstra">Dijkstra</option>
+            <option value="aStar">A Star (A*)</option>
+            <option value="bfs">Breadth-First Search</option>
+            <option value="dfs">Depth-First Search</option>
+            <option value="greedy">Greedy Best-First Search</option>
+          </select>
+        </div>
+        <div class="aside-row__col">
+          <button id="btnStartSearch">Start Search</button>
+          <button id="btnResetGrid">Stop!</button>
+        </div>
+      </aside>
+      <!-- Main Grid Container -->
+      <main>
+        <!-- Grid Container -->
+        <div class="grid-container" id="gridContainer">
+          <!-- Grid cells will be generated here -->
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
