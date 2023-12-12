@@ -159,6 +159,7 @@
 
       button#btnStartSearch {
         background-color: #28a745;
+        margin-bottom: 8px;
       }
       button#btnStartSearch:hover {
         background-color: #19692c;
@@ -216,8 +217,12 @@
         background-color: #6c757d;
       }
 
+      .grid-cell.queue {
+        background-color: #00f2ff;
+      }
+
       .grid-cell.visited {
-        background-color: #93e1a5;
+        background-color: #ffef40;
       }
 
       .grid-cell.path {
@@ -226,19 +231,185 @@
     </style>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
+        /* TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+        Change stopExecution function to terminate async functions
+          -Change function call for web worker? may work
+          https://stackoverflow.com/questions/75943921/how-to-stop-an-asynchronous-function-without-using-a-global-variable-in-javascri
+          https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
+        
+
+        Finish reading about the delay making
+        https://blog.praveen.science/right-way-of-delaying-execution-synchronously-in-javascript-without-using-loops-or-timeouts/
+        
+        Check function delay speed, see if it's too slow
+        
+        TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO */
+
+        // Variables declaration and initialization
+
         // Default search delay
-        let searchDelay = 100;
+        let searchDelay = 25;
         // Default placement type
         let placementType = "start";
         /*
-          Variable to track if the mouse button is pressed 
+          Variable to track if the mouse button is pressed
           for obstacle drawing
         */
         let mouseIsPressed = false;
 
+        // Cell states constants
+        const CELL_STATES = {
+          VISITED: "visited",
+          QUEUE: "queue",
+          PATH: "path",
+        };
+
+        const NEIGHBOR_ORIENTATION = {
+          DIRECT: "direct",
+          INDIRECT: "indirect",
+        };
+
+        const SEARCH_ALGORITHMS = {
+          BFS: "bfs",
+          DFS: "dfs",
+          ASTAR: "aStar",
+        };
+
+        function synchronousDelay(delay) {
+          return new Promise((done) => {
+            setTimeout(() => {
+              done();
+            }, delay);
+          });
+        }
+
+        /*
+          Search algorithms
+        */
+
+        function setCellState(cell, state) {
+          // Remove all previous states
+          cell.classList.remove(
+            CELL_STATES.VISITED,
+            CELL_STATES.QUEUE,
+            CELL_STATES.PATH
+          );
+
+          // Add the specified state
+          cell.classList.add(state);
+        }
+
+        // BFS's Algorithm
+        async function runBFS(
+          startCell,
+          goalCell,
+          gridCells,
+          obstacleCells,
+          delay,
+          neighborOrientation
+        ) {
+          // Create a queue for BFS
+          const queue = [];
+          queue.push(startCell);
+
+          // Create a set to track visited cells
+          const visited = new Set();
+          visited.add(startCell);
+
+          // Create an object to store the parent cell of each cell
+          const parent = {};
+
+          while (queue.length > 0) {
+            const currentCell = queue.shift();
+
+            if (currentCell === goalCell) {
+              // If we reached the goal cell, reconstruct the path and visualize it
+              await synchronousDelay(delay);
+              setCellState(currentCell, CELL_STATES.PATH);
+              return;
+            }
+
+            const neighbors = getNeighbors(currentCell, neighborOrientation);
+            for (const neighbor of neighbors) {
+              await synchronousDelay(delay);
+              if (
+                !visited.has(neighbor) &&
+                !neighbor.classList.contains("obstacle")
+              ) {
+                visited.add(neighbor);
+                parent[neighbor] = currentCell;
+                queue.push(neighbor);
+                setCellState(neighbor, CELL_STATES.QUEUE);
+              }
+            }
+
+            await synchronousDelay(delay);
+            setCellState(currentCell, CELL_STATES.VISITED);
+          }
+
+          if (queue.length === 0) {
+            alert("No Path Found.");
+          }
+        }
+
+        // Function to return cell neighbors
+        function getNeighbors(cell, orientation = NEIGHBOR_ORIENTATION.DIRECT) {
+          const x = parseInt(cell.getAttribute("cell-X"));
+          const y = parseInt(cell.getAttribute("cell-Y"));
+          const neighbors = [];
+
+          /*
+            Type of neighbors to be visited for the search algorithms
+          */
+          if (orientation === NEIGHBOR_ORIENTATION.DIRECT) {
+            // Add direct neighbors (vertical and horizontal)
+            if (x > 0) neighbors.push(getCell(x - 1, y));
+            if (x < parseInt(document.getElementById("xSize").value) - 1)
+              neighbors.push(getCell(x + 1, y));
+            if (y > 0) neighbors.push(getCell(x, y - 1));
+            if (y < parseInt(document.getElementById("ySize").value) - 1)
+              neighbors.push(getCell(x, y + 1));
+          }
+          // If you also need diagonal neighbors
+          else if (orientation === NEIGHBOR_ORIENTATION.INDIRECT) {
+            // Add direct neighbors
+            if (x > 0) neighbors.push(getCell(x - 1, y));
+            if (x < parseInt(document.getElementById("xSize").value) - 1)
+              neighbors.push(getCell(x + 1, y));
+            if (y > 0) neighbors.push(getCell(x, y - 1));
+            if (y < parseInt(document.getElementById("ySize").value) - 1)
+              neighbors.push(getCell(x, y + 1));
+
+            // Add indirect neighbors (diagonal)
+            if (x > 0 && y > 0) neighbors.push(getCell(x - 1, y - 1));
+            if (
+              x > 0 &&
+              y < parseInt(document.getElementById("ySize").value) - 1
+            )
+              neighbors.push(getCell(x - 1, y + 1));
+            if (
+              x < parseInt(document.getElementById("xSize").value) - 1 &&
+              y > 0
+            )
+              neighbors.push(getCell(x + 1, y - 1));
+            if (
+              x < parseInt(document.getElementById("xSize").value) - 1 &&
+              y < parseInt(document.getElementById("ySize").value) - 1
+            )
+              neighbors.push(getCell(x + 1, y + 1));
+          }
+
+          return neighbors;
+        }
+
+        function getCell(x, y) {
+          return document.querySelector(`[cell-X="${x}"][cell-Y="${y}"]`);
+        }
+
         // Stops any functions running
         function stopExecution() {
           window.stop();
+          window.location.reload();
         }
 
         // Generates grid
@@ -275,9 +446,9 @@
         }
 
         // Sets Search Delay
-        function setSearchDelay() {
+        function getSearchDelay() {
           const inputTimeout = document.getElementById("inputTimeout");
-          searchDelay = parseInt(inputTimeout.value);
+          return parseInt(inputTimeout.value);
           // console.log("Search Delay set to:", searchDelay, "ms");
         }
 
@@ -334,11 +505,6 @@
             // Regenerate the grid when the button is clicked
             generateGrid();
           });
-
-        // Event listener for search delay input
-        document
-          .getElementById("inputTimeout")
-          .addEventListener("input", setSearchDelay);
 
         // Event listeners for placement buttons
         document.querySelectorAll(".btn-placing").forEach((button) => {
@@ -413,6 +579,57 @@
             }
           });
 
+        // Event listener for start search button
+        document
+          .getElementById("btnStartSearch")
+          .addEventListener("click", () => {
+            const searchAlgorithmSelect =
+              document.getElementById("searchAlgorithm").value;
+            const startCell = document.querySelector(".start");
+            const goalCell = document.querySelector(".goal");
+            const gridCells = document.querySelectorAll(".grid-cell");
+            const obstacleCells = document.querySelectorAll(".obstacle");
+            const searchDelay = getSearchDelay();
+            const neighborOrientation = document.getElementById(
+              "neighborOrientation"
+            ).value;
+
+            console.log("searchAlgorithmSelect: ", searchAlgorithmSelect);
+            console.log("startCell: ", startCell);
+            console.log("goalCell: ", goalCell);
+            // console.log("gridCells: ", gridCells);
+            // console.log("obstacleCells: ", obstacleCells);
+
+            if (!startCell || !goalCell) {
+              alert("Please set both start and goal positions.");
+              return;
+            } else {
+              if (searchAlgorithmSelect === SEARCH_ALGORITHMS.BFS) {
+                // bfs
+                runBFS(
+                  startCell,
+                  goalCell,
+                  gridCells,
+                  obstacleCells,
+                  searchDelay,
+                  neighborOrientation
+                );
+              } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.DFS) {
+                // dfs
+              } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.ASTAR) {
+                // aStar
+              } else {
+                alert("The chosen algorithm is not implemented.");
+              }
+            }
+          });
+
+        document
+          .getElementById("btnResetGrid")
+          .addEventListener("click", () => {
+            stopExecution();
+            generateGrid();
+          });
         // ---------------------------
         // Generates grid on page load
         generateGrid();
@@ -470,26 +687,34 @@
             To add obstacles, use the left click, to remove, use the right
             click. You can drag the mouse.
           </span>
-          <span class="hints small">Sometimes, the drag becomes buggy. I don't know why.</span>
+          <span class="hints small"
+            >Sometimes, the drag becomes buggy. I don't know why.</span
+          >
         </div>
         <div class="aside-row">
           <label for="inputTimeout">Search Delay:</label>
-          <input type="number" id="inputTimeout" value="100" min="1" />
+          <input type="number" id="inputTimeout" value="25" min="1" />
           <span>ms</span>
+        </div>
+        <div class="aside-row">
+          <label for="neighborOrientation">Type of Neighbor:</label>
+          <select id="neighborOrientation">
+            <option value="direct">Direct (No diagonals)</option>
+            <option value="indirect">Indirect (With Diagonals)</option>
+          </select>
         </div>
         <div class="aside-row">
           <label for="searchAlgorithm">Algorithm:</label>
           <select id="searchAlgorithm">
-            <option value="dijkstra">Dijkstra</option>
-            <option value="aStar">A Star (A*)</option>
             <option value="bfs">Breadth-First Search</option>
             <option value="dfs">Depth-First Search</option>
-            <option value="greedy">Greedy Best-First Search</option>
+            <option value="aStar">A Star (A*)</option>
+            <option value="dijkstra">Dijkstra</option>
           </select>
         </div>
         <div class="aside-row__col">
           <button id="btnStartSearch">Start Search</button>
-          <button id="btnResetGrid">Stop!</button>
+          <button id="btnResetGrid">Reset!</button>
         </div>
       </aside>
       <!-- Main Grid Container -->
