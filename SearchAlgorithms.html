@@ -58,11 +58,11 @@
 
     h2 {
       font-size: 1.5rem;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .aside-row {
-      margin-bottom: 16px;
+      margin-bottom: 8px;
     }
 
     .aside-row__col {
@@ -327,11 +327,13 @@
         let currentId = goalCell.getAttribute("cell-X") + "-" + goalCell.getAttribute("cell-Y");
         const startId = startCell.getAttribute("cell-X") + "-" + startCell.getAttribute("cell-Y");
 
-        while (currentId !== startId) {
+        currentId = parent[currentId];
+
+        while (currentId && currentId !== startId) {
           const [x, y] = currentId.split("-");
           const current = document.querySelector(`[cell-X="${x}"][cell-Y="${y}"]`);
 
-          if (current && parent[currentId] !== startId) {
+          if (currentId !== startId) {
             setCellState(current, CELL_STATES.PATH);
           }
 
@@ -714,9 +716,8 @@
         <label for="searchAlgorithm">Algorithm:</label>
         <select id="searchAlgorithm">
           <option value="bfs">Breadth-First Search</option>
-          <option value="dfs">Depth-First Search</option>
+          <!-- <option value="dfs">Depth-First Search</option> -->
           <option value="aStar">A Star (A*)</option>
-          <option value="dijkstra">Dijkstra</option>
         </select>
       </div>
       <div class="aside-row__col">
