@@ -265,15 +265,15 @@
          -----Beginning of Search algorithms-----
       */
       async function runBFS(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation) {
-        // Create a queue for BFS
+        // Cell Queue for BFS
         const queue = [];
         queue.push(startCell);
 
-        // Create a set to track visited cells
+        // Set to track visited cells
         const visited = new Set();
         visited.add(startCell);
 
-        // Create an object to store the parent cell of each cell
+        // Object to store the parent cell of each cell
         const parent = {};
 
         while (queue.length > 0) {
@@ -314,12 +314,74 @@
           alert("No Path Found.");
         }
       }
+
+      async function runAStar(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation) {
+        // Cell Priority Queue for A*
+        const openSet = new PriorityQueue();
+        openSet.enqueue(startCell, 0);
+
+        // Set to track visited cells
+        const visited = new Set();
+        visited.add(startCell);
+
+        // Object to store the parent cell of each cell
+        const parent = {};
+
+        // Object to store the cost from start to each cell
+        const gScore = {};
+        gScore[getCellId(startCell)] = 0;
+
+        // Object to store estimated total cost from start to goal through each cell
+        const fScore = {};
+        fScore[getCellId(startCell)] = heuristic(startCell, goalCell);
+
+        while (!openSet.isEmpty()) {
+          const currentCell = openSet.dequeue();
+
+          if (currentCell === goalCell) {
+            await synchronousDelay(searchDelay);
+            setCellState(currentCell, CELL_STATES.PATH);
+            setCellState(startCell, CELL_STATES.START);
+            reconstructPath(parent, startCell, goalCell);
+            return;
+          }
+
+          const neighbors = getNeighbors(currentCell, neighborOrientation);
+
+          for (const neighbor of neighbors) {
+            await synchronousDelay(searchDelay);
+
+            if (!visited.has(neighbor) && !neighbor.classList.contains("obstacle")) {
+              const neighborId = getCellId(neighbor);
+              const currentCellId = getCellId(currentCell);
+
+              const tentativeGScore = gScore[currentCellId] + distBetween(currentCell, neighbor);
+
+              if (tentativeGScore < (gScore[neighborId] || Infinity)) {
+                visited.add(neighborId);
+                parent[neighborId] = currentCellId;
+                gScore[neighborId] = tentativeGScore;
+                fScore[neighborId] = gScore[neighborId] + heuristic(neighbor, goalCell);
+                openSet.enqueue(neighbor, fScore[neighborId]);
+                setCellState(neighbor, CELL_STATES.QUEUE);
+              }
+            }
+          }
+
+          await synchronousDelay(searchDelay);
+          setCellState(currentCell, CELL_STATES.VISITED);
+        }
+
+        if (openSet.isEmpty()) {
+          alert("No Path Found.");
+        }
+      }
       /*
          -----End of Search algorithms-----
       */
 
       // -----Beginning of Core Functions for Search Algorithms-----
-      function reconstructPath(parent, startCell, goalCell) {
+      async function reconstructPath(parent, startCell, goalCell) {
         let currentId = getCellId(goalCell);
         const startId = getCellId(startCell);
 
@@ -334,7 +396,9 @@
           }
 
           currentId = parent[currentId];
-          synchronousDelay(50);
+
+          // Delay for reconstructing fun
+          await synchronousDelay(25);
         }
       }
 
@@ -391,6 +455,56 @@
         }
 
         return neighbors;
+      }
+
+      function heuristic(cell, goalCell) {
+        // Manhattan distance
+        const cellX = getCellX(cell);
+        const cellY = getCellY(cell);
+        const goalX = getCellX(goalCell);
+        const goalY = getCellY(goalCell);
+        return Math.abs(cellX - goalX) + Math.abs(cellY - goalY);
+      }
+
+      // Distance between neighbors
+      function distBetween(cellA, cellB) {
+        const ax = getCellX(cellA);
+        const ay = getCellY(cellA);
+        const bx = getCellX(cellB);
+        const by = getCellY(cellB);
+
+        // Check if diagonal by comparing both axes
+        const isDiagonal = (ax !== bx) && (ay !== by);
+        // Cost for direct (horizontal/vertical) moves
+        const directDistance = 1;
+        /*
+          Cost for diagonal moves, usually sqrt(2) for a grid,
+          TODO
+          might be settable in the future
+        */
+        const diagonalDistance = Math.sqrt(2);
+
+        return isDiagonal ? diagonalDistance : directDistance;
+      }
+
+      /*
+        Creates an autosorting queue for cases where
+        a list needs to be sorted to prioritize cells
+      */
+      class PriorityQueue {
+        constructor() {
+          this.elements = [];
+        }
+        enqueue(item, priority) {
+          this.elements.push({ item, priority });
+          this.elements.sort((a, b) => a.priority - b.priority);
+        }
+        dequeue() {
+          return this.elements.shift().item;
+        }
+        isEmpty() {
+          return this.elements.length === 0;
+        }
       }
       // -----End of Core Functions for Search Algorithms-----
 
@@ -643,7 +757,7 @@
             } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.DFS) {
               // dfs
             } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.ASTAR) {
-              runAstar(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation);
+              runAStar(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation);
             } else {
               alert("The chosen algorithm is not implemented.");
             }
