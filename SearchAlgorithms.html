@@ -62,13 +62,13 @@
     }
 
     .aside-row {
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
     .aside-row__col {
       display: flex;
       flex-flow: row wrap;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
       justify-content: space-between;
     }
 
@@ -104,11 +104,11 @@
     }
 
     input[type="number"]#inputTimeout {
-      width: 80px;
+      width: 60px;
     }
 
     button {
-      padding: 8px 16px;
+      padding: 8px 15px;
       background-color: #ff9b00;
       font-size: 1.125rem;
       color: #fff;
@@ -235,8 +235,7 @@
   </style>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // Variables declaration and initialization
-
+      // -----Beginning of Variables Declaration and Initialization-----
       // Default placement type
       let placementType = "start";
       /*
@@ -260,17 +259,10 @@
         DFS: "dfs",
         ASTAR: "aStar",
       };
-
-      function synchronousDelay(delay) {
-        return new Promise((done) => {
-          setTimeout(() => {
-            done();
-          }, delay);
-        });
-      }
+      // -----End of Variables Declaration and Initialization-----
 
       /*
-        Search algorithms
+         -----Beginning of Search algorithms-----
       */
       async function runBFS(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation) {
         // Create a queue for BFS
@@ -303,8 +295,8 @@
             await synchronousDelay(searchDelay);
             // Inside runBFS, when adding a neighbor to the queue and parent object
             if (!visited.has(neighbor) && !neighbor.classList.contains("obstacle")) {
-              const neighborId = neighbor.getAttribute("cell-X") + "-" + neighbor.getAttribute("cell-Y");
-              const currentCellId = currentCell.getAttribute("cell-X") + "-" + currentCell.getAttribute("cell-Y");
+              const neighborId = getCellId(neighbor);
+              const currentCellId = getCellId(currentCell);
 
               visited.add(neighbor);
               parent[neighborId] = currentCellId; // Store the parent using a unique ID
@@ -322,25 +314,29 @@
           alert("No Path Found.");
         }
       }
+      /*
+         -----End of Search algorithms-----
+      */
 
+      // -----Beginning of Core Functions for Search Algorithms-----
       function reconstructPath(parent, startCell, goalCell) {
-        let currentId = goalCell.getAttribute("cell-X") + "-" + goalCell.getAttribute("cell-Y");
-        const startId = startCell.getAttribute("cell-X") + "-" + startCell.getAttribute("cell-Y");
+        let currentId = getCellId(goalCell);
+        const startId = getCellId(startCell);
 
         currentId = parent[currentId];
 
         while (currentId && currentId !== startId) {
           const [x, y] = currentId.split("-");
-          const current = document.querySelector(`[cell-X="${x}"][cell-Y="${y}"]`);
+          const current = getCell(x, y);
 
           if (currentId !== startId) {
             setCellState(current, CELL_STATES.PATH);
           }
 
           currentId = parent[currentId];
+          synchronousDelay(50);
         }
       }
-
 
       function setCellState(cell, state) {
         // Remove all previous states
@@ -349,15 +345,14 @@
           CELL_STATES.QUEUE,
           CELL_STATES.PATH
         );
-
-        // Add the specified state
+        // Adds state in cell classes
         cell.classList.add(state);
       }
 
-      // Function to return cell neighbors
+      // Returns cell neighbors
       function getNeighbors(cell, orientation = NEIGHBOR_ORIENTATION.DIRECT) {
-        const x = parseInt(cell.getAttribute("cell-X"));
-        const y = parseInt(cell.getAttribute("cell-Y"));
+        const x = getCellX(cell);
+        const y = getCellY(cell);
         const neighbors = [];
 
         /*
@@ -397,25 +392,46 @@
 
         return neighbors;
       }
+      // -----End of Core Functions for Search Algorithms-----
 
+      // -----Beginning of Supporting Functions for Search Algorithms-----
       // Returns the cell by query selection
       function getCell(x, y) {
         return document.querySelector(`[cell-X="${x}"][cell-Y="${y}"]`);
       }
-
-      function getCellId(string) {
-
+      // Returns cell Id for unique reference
+      function getCellId(cell) {
+        return cell.getAttribute("cell-X") + "-" + cell.getAttribute("cell-Y");
       }
-
+      // Returns X of Cell
+      function getCellX(cell) {
+        return parseInt(cell.getAttribute("cell-X"));
+      }
+      // Returns Y of Cell
+      function getCellY(cell) {
+        return parseInt(cell.getAttribute("cell-Y"));
+      }
       // Returns X size of the grid
       function getXSize() {
-        return parseInt(document.getElementById("xSize").value)
+        return parseInt(document.getElementById("xSize").value);
       }
       // Returns Y size of the grid
       function getYSize() {
-        return parseInt(document.getElementById("ySize").value)
+        return parseInt(document.getElementById("ySize").value);
       }
+      // -----End of Supporting Functions for Search Algorithms-----
 
+      /*
+        Function to turn the asynchronous setTimeout into a promise 
+        to force synchronous behaviour
+      */
+      function synchronousDelay(delay) {
+        return new Promise((done) => {
+          setTimeout(() => {
+            done();
+          }, delay);
+        });
+      }
       /*
         Reloads page to stop function execution, 
         on javascript you can't stop a function without an exception
@@ -455,7 +471,7 @@
         }
       }
 
-      // Sets Search Delay
+      // Gets Search Delay
       function getSearchDelay() {
         const inputTimeout = document.getElementById("inputTimeout");
         return parseInt(inputTimeout.value);
@@ -700,10 +716,9 @@
         </span>
         <span class="hints small">Sometimes, the drag becomes buggy. I don't know why.</span>
       </div>
-      <div class="aside-row">
-        <label for="inputTimeout">Search Delay:</label>
-        <input type="number" id="inputTimeout" value="25" min="0" step="5" />
-        <span>ms</span>
+      <div class="aside-row__col">
+        <label for="inputTimeout">Delay in (ms):</label>
+        <input type="number" id="inputTimeout" value="10" min="0" step="5" />
       </div>
       <div class="aside-row">
         <label for="neighborOrientation">Type of Neighbor:</label>
