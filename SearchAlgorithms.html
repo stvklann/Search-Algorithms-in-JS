@@ -1,729 +1,737 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,300;1,400;1,500;1,600;1,700;1,900&display=swap"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,300;1,400;1,500;1,600;1,700;1,900&display=swap"
-      rel="stylesheet"
-    />
-    <title>Grid Search Visualization</title>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,300;1,400;1,500;1,600;1,700;1,900&display=swap" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,300;1,400;1,500;1,600;1,700;1,900&display=swap"
+    rel="stylesheet" />
+  <title>Grid Search Visualization</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      font-size: 1.25rem;
+    }
+
+    .container {
+      min-height: calc(100vh - 40px);
+      padding: 20px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
+
+    header {
+      position: relative;
+    }
+
+    .logo {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      height: auto;
+      width: 48px;
+    }
+
+    aside {
+      min-height: inherit;
+      min-width: 240px;
+      width: 240px;
+      padding: 0 20px 20px 0;
+      border-right: 1px solid #ccc;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .aside-row {
+      margin-bottom: 16px;
+    }
+
+    .aside-row__col {
+      display: flex;
+      flex-flow: row wrap;
+      margin-bottom: 20px;
+      justify-content: space-between;
+    }
+
+    .grid-inputs {
+      display: flex;
+      align-items: center;
+    }
+
+    .grid-inputs * {
+      margin: 0 2px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .hints {
+      font-size: 0.8rem;
+      display: inline-block;
+      padding: 2px 0;
+      text-align: justify;
+    }
+
+    .hints.small {
+      font-size: 0.5rem;
+    }
+
+    input[type="number"] {
+      height: 28px;
+      padding: 4px 4px 3px;
+      width: 52px;
+    }
+
+    input[type="number"]#inputTimeout {
+      width: 80px;
+    }
+
+    button {
+      padding: 8px 16px;
+      background-color: #ff9b00;
+      font-size: 1.125rem;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: block;
+      border-radius: 6px;
+      transition: background-color 300ms;
+    }
+
+    button:hover {
+      background-color: #cc7c00;
+    }
+
+    .placing-ct {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-placing {
+      padding: 6px 8px;
+      margin: 4px 0;
+      font-size: 1rem;
+    }
+
+    .btn-placing.blue {
+      background-color: #0d6efd;
+    }
+
+    .btn-placing.blue:hover {
+      background-color: #0057b4;
+    }
+
+    .btn-placing.red {
+      background-color: #dc3545;
+    }
+
+    .btn-placing.red:hover {
+      background-color: #a42834;
+    }
+
+    .btn-placing.gray {
+      background-color: #6c757d;
+    }
+
+    .btn-placing.gray:hover {
+      background-color: #4a5055;
+    }
+
+    button#btnStartSearch {
+      margin-bottom: 8px;
+      background-color: #28a745;
+    }
+
+    button#btnStartSearch:hover {
+      background-color: #19692c;
+    }
+
+    button#btnResetGrid {
+      margin-bottom: 8px;
+      background-color: #dc3545;
+      font-style: italic;
+      font-weight: 700;
+    }
+
+    button#btnResetGrid:hover {
+      background-color: #a42834;
+    }
+
+    select {
+      width: 100%;
+      padding: 5px;
+    }
+
+    main {
+      min-height: inherit;
+      padding: 20px;
+      flex-grow: 1;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(10,
+          15px);
+      /* Adjust the grid size as needed */
+      grid-gap: 1px;
+    }
+
+    .grid-cell {
+      height: 15px;
+      width: 15px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      text-align: center;
+      line-height: 30px;
+    }
+
+    .grid-cell.start {
+      background-color: #0d6efd;
+      color: #fff;
+    }
+
+    .grid-cell.goal {
+      background-color: #dc3545;
+      color: #fff;
+    }
+
+    .grid-cell.obstacle {
+      background-color: #6c757d;
+    }
+
+    .grid-cell.queue {
+      background-color: #00f2ff;
+    }
+
+    .grid-cell.visited {
+      background-color: #ffef40;
+    }
+
+    .grid-cell.path {
+      background-color: #28a745;
+    }
+  </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Variables declaration and initialization
+
+      // Default placement type
+      let placementType = "start";
+      /*
+        Variable to track if the mouse button is pressed
+        for obstacle drawing
+      */
+      let mouseIsPressed = false;
+      // Cell states constants
+      const CELL_STATES = {
+        START: "start",
+        VISITED: "visited",
+        QUEUE: "queue",
+        PATH: "path",
+      };
+      const NEIGHBOR_ORIENTATION = {
+        DIRECT: "direct",
+        INDIRECT: "indirect",
+      };
+      const SEARCH_ALGORITHMS = {
+        BFS: "bfs",
+        DFS: "dfs",
+        ASTAR: "aStar",
+      };
+
+      function synchronousDelay(delay) {
+        return new Promise((done) => {
+          setTimeout(() => {
+            done();
+          }, delay);
+        });
       }
 
-      body {
-        font-family: "Poppins", Arial, sans-serif;
-        font-size: 1.25rem;
+      /*
+        Search algorithms
+      */
+      async function runBFS(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation) {
+        // Create a queue for BFS
+        const queue = [];
+        queue.push(startCell);
+
+        // Create a set to track visited cells
+        const visited = new Set();
+        visited.add(startCell);
+
+        // Create an object to store the parent cell of each cell
+        const parent = {};
+
+        while (queue.length > 0) {
+          const currentCell = queue.shift();
+
+          if (currentCell === goalCell) {
+            // If we reached the goal cell, reconstruct the path and visualize it
+            await synchronousDelay(searchDelay);
+            setCellState(currentCell, CELL_STATES.PATH);
+            setCellState(startCell, CELL_STATES.START)
+
+            reconstructPath(parent, startCell, goalCell);
+            return;
+          }
+
+          const neighbors = getNeighbors(currentCell, neighborOrientation);
+
+          for (const neighbor of neighbors) {
+            await synchronousDelay(searchDelay);
+            // Inside runBFS, when adding a neighbor to the queue and parent object
+            if (!visited.has(neighbor) && !neighbor.classList.contains("obstacle")) {
+              const neighborId = neighbor.getAttribute("cell-X") + "-" + neighbor.getAttribute("cell-Y");
+              const currentCellId = currentCell.getAttribute("cell-X") + "-" + currentCell.getAttribute("cell-Y");
+
+              visited.add(neighbor);
+              parent[neighborId] = currentCellId; // Store the parent using a unique ID
+              queue.push(neighbor);
+              setCellState(neighbor, CELL_STATES.QUEUE);
+            }
+
+          }
+
+          await synchronousDelay(searchDelay);
+          setCellState(currentCell, CELL_STATES.VISITED);
+        }
+
+        if (queue.length === 0) {
+          alert("No Path Found.");
+        }
       }
 
-      .container {
-        min-height: calc(100vh - 40px);
-        padding: 20px;
-        display: flex;
-        justify-content: flex-start;
-        align-items: flex-start;
+      function reconstructPath(parent, startCell, goalCell) {
+        let currentId = goalCell.getAttribute("cell-X") + "-" + goalCell.getAttribute("cell-Y");
+        const startId = startCell.getAttribute("cell-X") + "-" + startCell.getAttribute("cell-Y");
+
+        while (currentId !== startId) {
+          const [x, y] = currentId.split("-");
+          const current = document.querySelector(`[cell-X="${x}"][cell-Y="${y}"]`);
+
+          if (current && parent[currentId] !== startId) {
+            setCellState(current, CELL_STATES.PATH);
+          }
+
+          currentId = parent[currentId];
+        }
       }
 
-      header {
-        position: relative;
+
+      function setCellState(cell, state) {
+        // Remove all previous states
+        cell.classList.remove(
+          CELL_STATES.VISITED,
+          CELL_STATES.QUEUE,
+          CELL_STATES.PATH
+        );
+
+        // Add the specified state
+        cell.classList.add(state);
       }
 
-      .logo {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        height: auto;
-        width: 48px;
-      }
+      // Function to return cell neighbors
+      function getNeighbors(cell, orientation = NEIGHBOR_ORIENTATION.DIRECT) {
+        const x = parseInt(cell.getAttribute("cell-X"));
+        const y = parseInt(cell.getAttribute("cell-Y"));
+        const neighbors = [];
 
-      aside {
-        min-height: inherit;
-        min-width: 240px;
-        width: 240px;
-        padding: 0 20px 20px 0;
-        border-right: 1px solid #ccc;
-      }
-
-      h1 {
-        font-size: 2rem;
-      }
-
-      h2 {
-        font-size: 1.5rem;
-        margin-bottom: 12px;
-      }
-
-      .aside-row {
-        margin-bottom: 16px;
-      }
-
-      .aside-row__col {
-        display: flex;
-        flex-flow: row wrap;
-        margin-bottom: 20px;
-        justify-content: space-between;
-      }
-
-      .grid-inputs {
-        display: flex;
-        align-items: center;
-      }
-
-      .grid-inputs * {
-        margin: 0 2px;
-      }
-
-      label {
-        display: block;
-        margin-bottom: 5px;
-      }
-
-      .hints {
-        font-size: 0.8rem;
-        display: inline-block;
-        padding: 2px 0;
-        text-align: justify;
-      }
-      .hints.small {
-        font-size: 0.5rem;
-      }
-
-      input[type="number"] {
-        height: 28px;
-        padding: 4px 4px 3px;
-        width: 52px;
-      }
-
-      input[type="number"]#inputTimeout {
-        width: 80px;
-      }
-
-      button {
-        padding: 8px 16px;
-        background-color: #ff9b00;
-        font-size: 1.125rem;
-        color: #fff;
-        border: none;
-        cursor: pointer;
-        display: block;
-        border-radius: 6px;
-        transition: background-color 300ms;
-      }
-      button:hover {
-        background-color: #cc7c00;
-      }
-
-      .placing-ct {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .btn-placing {
-        padding: 6px 8px;
-        margin: 4px 0;
-        font-size: 1rem;
-      }
-
-      .btn-placing.blue {
-        background-color: #0d6efd;
-      }
-      .btn-placing.blue:hover {
-        background-color: #0057b4;
-      }
-
-      .btn-placing.red {
-        background-color: #dc3545;
-      }
-      .btn-placing.red:hover {
-        background-color: #a42834;
-      }
-
-      .btn-placing.gray {
-        background-color: #6c757d;
-      }
-      .btn-placing.gray:hover {
-        background-color: #4a5055;
-      }
-
-      button#btnStartSearch {
-        background-color: #28a745;
-        margin-bottom: 8px;
-      }
-      button#btnStartSearch:hover {
-        background-color: #19692c;
-      }
-
-      button#btnResetGrid {
-        background-color: #dc3545;
-        font-style: italic;
-        font-weight: 700;
-      }
-      button#btnResetGrid:hover {
-        background-color: #a42834;
-      }
-
-      select {
-        width: 100%;
-        padding: 5px;
-      }
-
-      main {
-        min-height: inherit;
-        padding: 20px;
-        flex-grow: 1;
-      }
-
-      .grid-container {
-        display: grid;
-        grid-template-columns: repeat(
-          10,
-          15px
-        ); /* Adjust the grid size as needed */
-        grid-gap: 1px;
-      }
-
-      .grid-cell {
-        height: 15px;
-        width: 15px;
-        border: 1px solid #ccc;
-        background-color: #fff;
-        text-align: center;
-        line-height: 30px;
-      }
-
-      .grid-cell.start {
-        background-color: #0d6efd;
-        color: #fff;
-      }
-
-      .grid-cell.goal {
-        background-color: #dc3545;
-        color: #fff;
-      }
-
-      .grid-cell.obstacle {
-        background-color: #6c757d;
-      }
-
-      .grid-cell.queue {
-        background-color: #00f2ff;
-      }
-
-      .grid-cell.visited {
-        background-color: #ffef40;
-      }
-
-      .grid-cell.path {
-        background-color: #28a745;
-      }
-    </style>
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        /* TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-        Change stopExecution function to terminate async functions
-          -Change function call for web worker? may work
-          https://stackoverflow.com/questions/75943921/how-to-stop-an-asynchronous-function-without-using-a-global-variable-in-javascri
-          https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
-        
-
-        Finish reading about the delay making
-        https://blog.praveen.science/right-way-of-delaying-execution-synchronously-in-javascript-without-using-loops-or-timeouts/
-        
-        Check function delay speed, see if it's too slow
-        
-        TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO */
-
-        // Variables declaration and initialization
-
-        // Default search delay
-        let searchDelay = 25;
-        // Default placement type
-        let placementType = "start";
         /*
-          Variable to track if the mouse button is pressed
-          for obstacle drawing
+          Type of neighbors, vertical and horizontal only, or with diagonals
         */
-        let mouseIsPressed = false;
-
-        // Cell states constants
-        const CELL_STATES = {
-          VISITED: "visited",
-          QUEUE: "queue",
-          PATH: "path",
-        };
-
-        const NEIGHBOR_ORIENTATION = {
-          DIRECT: "direct",
-          INDIRECT: "indirect",
-        };
-
-        const SEARCH_ALGORITHMS = {
-          BFS: "bfs",
-          DFS: "dfs",
-          ASTAR: "aStar",
-        };
-
-        function synchronousDelay(delay) {
-          return new Promise((done) => {
-            setTimeout(() => {
-              done();
-            }, delay);
-          });
+        if (orientation === NEIGHBOR_ORIENTATION.DIRECT) {
+          // Direct neighbors
+          if (x > 0)
+            neighbors.push(getCell(x - 1, y));
+          if (x < getXSize() - 1)
+            neighbors.push(getCell(x + 1, y));
+          if (y > 0)
+            neighbors.push(getCell(x, y - 1));
+          if (y < getYSize() - 1)
+            neighbors.push(getCell(x, y + 1));
+        }
+        else if (orientation === NEIGHBOR_ORIENTATION.INDIRECT) {
+          // Direct neighbors
+          if (x > 0)
+            neighbors.push(getCell(x - 1, y));
+          if (x < getXSize() - 1)
+            neighbors.push(getCell(x + 1, y));
+          if (y > 0)
+            neighbors.push(getCell(x, y - 1));
+          if (y < getYSize() - 1)
+            neighbors.push(getCell(x, y + 1));
+          // Diagonal neighbors
+          if (x > 0 && y > 0)
+            neighbors.push(getCell(x - 1, y - 1));
+          if (x > 0 && y < getYSize() - 1)
+            neighbors.push(getCell(x - 1, y + 1));
+          if (x < getXSize() - 1 && y > 0)
+            neighbors.push(getCell(x + 1, y - 1));
+          if (x < getXSize() - 1 && y < getYSize() - 1)
+            neighbors.push(getCell(x + 1, y + 1));
         }
 
-        /*
-          Search algorithms
-        */
+        return neighbors;
+      }
 
-        function setCellState(cell, state) {
-          // Remove all previous states
-          cell.classList.remove(
-            CELL_STATES.VISITED,
-            CELL_STATES.QUEUE,
-            CELL_STATES.PATH
-          );
+      // Returns the cell by query selection
+      function getCell(x, y) {
+        return document.querySelector(`[cell-X="${x}"][cell-Y="${y}"]`);
+      }
 
-          // Add the specified state
-          cell.classList.add(state);
-        }
+      function getCellId(string) {
 
-        // BFS's Algorithm
-        async function runBFS(
-          startCell,
-          goalCell,
-          gridCells,
-          obstacleCells,
-          delay,
-          neighborOrientation
-        ) {
-          // Create a queue for BFS
-          const queue = [];
-          queue.push(startCell);
+      }
 
-          // Create a set to track visited cells
-          const visited = new Set();
-          visited.add(startCell);
+      // Returns X size of the grid
+      function getXSize() {
+        return parseInt(document.getElementById("xSize").value)
+      }
+      // Returns Y size of the grid
+      function getYSize() {
+        return parseInt(document.getElementById("ySize").value)
+      }
 
-          // Create an object to store the parent cell of each cell
-          const parent = {};
+      /*
+        Reloads page to stop function execution, 
+        on javascript you can't stop a function without an exception
+      */
+      function stopExecution() {
+        window.stop();
+        window.location.reload();
+      }
 
-          while (queue.length > 0) {
-            const currentCell = queue.shift();
+      // Generates grid
+      function generateGrid() {
+        const xSize = getXSize();
+        const ySize = getYSize();
 
-            if (currentCell === goalCell) {
-              // If we reached the goal cell, reconstruct the path and visualize it
-              await synchronousDelay(delay);
-              setCellState(currentCell, CELL_STATES.PATH);
-              return;
-            }
+        const gridContainer = document.getElementById("gridContainer");
+        // Clear existing grid
+        gridContainer.innerHTML = "";
 
-            const neighbors = getNeighbors(currentCell, neighborOrientation);
-            for (const neighbor of neighbors) {
-              await synchronousDelay(delay);
-              if (
-                !visited.has(neighbor) &&
-                !neighbor.classList.contains("obstacle")
-              ) {
-                visited.add(neighbor);
-                parent[neighbor] = currentCell;
-                queue.push(neighbor);
-                setCellState(neighbor, CELL_STATES.QUEUE);
-              }
-            }
+        //  grid-template-columns based on user input
+        gridContainer.style.gridTemplateColumns = `repeat(${ySize}, 15px)`;
 
-            await synchronousDelay(delay);
-            setCellState(currentCell, CELL_STATES.VISITED);
-          }
+        for (let i = 0; i < xSize; i++) {
+          for (let j = 0; j < ySize; j++) {
+            const cell = document.createElement("div");
+            cell.className = "grid-cell";
+            cell.setAttribute("cell-X", i);
+            cell.setAttribute("cell-Y", j);
+            gridContainer.appendChild(cell);
 
-          if (queue.length === 0) {
-            alert("No Path Found.");
-          }
-        }
-
-        // Function to return cell neighbors
-        function getNeighbors(cell, orientation = NEIGHBOR_ORIENTATION.DIRECT) {
-          const x = parseInt(cell.getAttribute("cell-X"));
-          const y = parseInt(cell.getAttribute("cell-Y"));
-          const neighbors = [];
-
-          /*
-            Type of neighbors to be visited for the search algorithms
-          */
-          if (orientation === NEIGHBOR_ORIENTATION.DIRECT) {
-            // Add direct neighbors (vertical and horizontal)
-            if (x > 0) neighbors.push(getCell(x - 1, y));
-            if (x < parseInt(document.getElementById("xSize").value) - 1)
-              neighbors.push(getCell(x + 1, y));
-            if (y > 0) neighbors.push(getCell(x, y - 1));
-            if (y < parseInt(document.getElementById("ySize").value) - 1)
-              neighbors.push(getCell(x, y + 1));
-          }
-          // If you also need diagonal neighbors
-          else if (orientation === NEIGHBOR_ORIENTATION.INDIRECT) {
-            // Add direct neighbors
-            if (x > 0) neighbors.push(getCell(x - 1, y));
-            if (x < parseInt(document.getElementById("xSize").value) - 1)
-              neighbors.push(getCell(x + 1, y));
-            if (y > 0) neighbors.push(getCell(x, y - 1));
-            if (y < parseInt(document.getElementById("ySize").value) - 1)
-              neighbors.push(getCell(x, y + 1));
-
-            // Add indirect neighbors (diagonal)
-            if (x > 0 && y > 0) neighbors.push(getCell(x - 1, y - 1));
-            if (
-              x > 0 &&
-              y < parseInt(document.getElementById("ySize").value) - 1
-            )
-              neighbors.push(getCell(x - 1, y + 1));
-            if (
-              x < parseInt(document.getElementById("xSize").value) - 1 &&
-              y > 0
-            )
-              neighbors.push(getCell(x + 1, y - 1));
-            if (
-              x < parseInt(document.getElementById("xSize").value) - 1 &&
-              y < parseInt(document.getElementById("ySize").value) - 1
-            )
-              neighbors.push(getCell(x + 1, y + 1));
-          }
-
-          return neighbors;
-        }
-
-        function getCell(x, y) {
-          return document.querySelector(`[cell-X="${x}"][cell-Y="${y}"]`);
-        }
-
-        // Stops any functions running
-        function stopExecution() {
-          window.stop();
-          window.location.reload();
-        }
-
-        // Generates grid
-        function generateGrid() {
-          const xSize = parseInt(document.getElementById("xSize").value);
-          const ySize = parseInt(document.getElementById("ySize").value);
-
-          const gridContainer = document.getElementById("gridContainer");
-          // Clear any existing grid
-          gridContainer.innerHTML = "";
-
-          /*
-            Change the grid-template-columns based on
-            user input to retain correct column number
-          */
-          gridContainer.style.gridTemplateColumns = `repeat(${ySize}, 15px)`;
-
-          for (let i = 0; i < xSize; i++) {
-            for (let j = 0; j < ySize; j++) {
-              const cell = document.createElement("div");
-              cell.className = "grid-cell";
-              cell.setAttribute("cell-X", i);
-              cell.setAttribute("cell-Y", j);
-              gridContainer.appendChild(cell);
-
-              // Paint the first cell as the start and the last cell as the goal
-              if (i === 0 && j === 0) {
-                cell.classList.add("start");
-              } else if (i === xSize - 1 && j === ySize - 1) {
-                cell.classList.add("goal");
-              }
+            // Paint the first cell as the start and the last cell as the goal
+            if (i === 0 && j === 0) {
+              cell.classList.add("start");
+            } else if (i === xSize - 1 && j === ySize - 1) {
+              cell.classList.add("goal");
             }
           }
         }
+      }
 
-        // Sets Search Delay
-        function getSearchDelay() {
-          const inputTimeout = document.getElementById("inputTimeout");
-          return parseInt(inputTimeout.value);
-          // console.log("Search Delay set to:", searchDelay, "ms");
-        }
+      // Sets Search Delay
+      function getSearchDelay() {
+        const inputTimeout = document.getElementById("inputTimeout");
+        return parseInt(inputTimeout.value);
+        // console.log("Search Delay set to:", searchDelay, "ms");
+      }
 
-        // Handle obstacles drawing with mouseover
-        function drawObstacle(cell, mouseButton) {
-          if (mouseIsPressed && placementType === "obstacles") {
-            cell.classList.remove("start", "goal");
-            if (mouseButton === 1) {
-              cell.classList.add("obstacle");
-            } else if (mouseButton === 2) {
-              cell.classList.remove("obstacle");
-            }
+      // Handle obstacles drawing with mouseover
+      function drawObstacle(cell, mouseButton) {
+        if (mouseIsPressed && placementType === "obstacles") {
+          cell.classList.remove("start", "goal");
+          if (mouseButton === 1) {
+            cell.classList.add("obstacle");
+          } else if (mouseButton === 2) {
+            cell.classList.remove("obstacle");
           }
         }
+      }
 
-        // Function to clear existing start or goal points
-        function clearStartOrGoal() {
-          const cells = document.querySelectorAll(".grid-cell");
-          cells.forEach((cell) => {
-            if (placementType === "start" && cell.classList.contains("start")) {
-              cell.classList.remove("start");
-            } else if (
-              placementType === "goal" &&
-              cell.classList.contains("goal")
-            ) {
-              cell.classList.remove("goal");
-            }
-          });
-        }
-
-        // Function to update start or goal coordinates
-        function updateCoordinates(type, x, y) {
-          if (type === "start") {
-            startX = x;
-            startY = y;
-            document.getElementById("startX").textContent = startX;
-            document.getElementById("startY").textContent = startY;
-          } else if (type === "goal") {
-            goalX = x;
-            goalY = y;
-            document.getElementById("goalX").textContent = goalX;
-            document.getElementById("goalY").textContent = goalY;
+      // Function to clear existing start or goal points
+      function clearStartOrGoal() {
+        const cells = document.querySelectorAll(".grid-cell");
+        cells.forEach((cell) => {
+          if (placementType === "start" && cell.classList.contains("start")) {
+            cell.classList.remove("start");
+          } else if (
+            placementType === "goal" &&
+            cell.classList.contains("goal")
+          ) {
+            cell.classList.remove("goal");
           }
+        });
+      }
+
+      // Function to update start or goal coordinates
+      function updateCoordinates(type, x, y) {
+        if (type === "start") {
+          startX = x;
+          startY = y;
+          document.getElementById("startX").textContent = startX;
+          document.getElementById("startY").textContent = startY;
+        } else if (type === "goal") {
+          goalX = x;
+          goalY = y;
+          document.getElementById("goalX").textContent = goalX;
+          document.getElementById("goalY").textContent = goalY;
         }
+      }
 
-        // ----------------------------
-        // Event Listeners declarations
-        // ----------------------------
+      // ----------------------------
+      // Event Listeners declarations
+      // ----------------------------
 
-        // Event listener for the generate grid button
-        document
-          .getElementById("btnGridGenerator")
-          .addEventListener("click", () => {
-            // Regenerate the grid when the button is clicked
-            generateGrid();
-          });
-
-        // Event listeners for placement buttons
-        document.querySelectorAll(".btn-placing").forEach((button) => {
-          button.addEventListener("click", (e) => {
-            placementType = e.target.getAttribute("data-placement-type");
-            // console.log(e);
-            // console.log(placementType);
-          });
+      // Event listener for the generate grid button
+      document
+        .getElementById("btnGridGenerator")
+        .addEventListener("click", () => {
+          // Regenerate the grid when the button is clicked
+          generateGrid();
         });
 
-        // Event listener to start drawing when mouse button is pressed
-        document
-          .getElementById("gridContainer")
-          .addEventListener("mousedown", () => {
-            mouseIsPressed = true;
-          });
-        // Event listener to stop drawing when mouse button is released
-        document.addEventListener("mouseup", () => {
-          mouseIsPressed = false;
+      // Event listeners for placement buttons
+      document.querySelectorAll(".btn-placing").forEach((button) => {
+        button.addEventListener("click", (e) => {
+          placementType = e.target.getAttribute("data-placement-type");
+          // console.log(e);
+          // console.log(placementType);
         });
-        // Event listener for mousemove to draw obstacles while moving the mouse
-        document
-          .getElementById("gridContainer")
-          .addEventListener("mousemove", (e) => {
-            const cell = e.target;
-            if (cell.classList.contains("grid-cell")) {
-              drawObstacle(cell, e.buttons);
-            }
-          });
-
-        // Event listener for mouse right-click (contextmenu)
-        document
-          .getElementById("gridContainer")
-          .addEventListener("contextmenu", (e) => {
-            // Prevent the context menu from appearing
-            e.preventDefault();
-            const cell = e.target;
-            if (cell.classList.contains("grid-cell")) {
-              cell.classList.remove("obstacle");
-            }
-          });
-
-        document
-          .getElementById("gridContainer")
-          .addEventListener("click", (e) => {
-            const cell = e.target;
-            if (cell.classList.contains("grid-cell")) {
-              // Set the background color based on the placement type
-              const cellX = cell.getAttribute("cell-X");
-              const cellY = cell.getAttribute("cell-Y");
-              switch (placementType) {
-                case "start":
-                  clearStartOrGoal();
-                  cell.classList.remove("goal", "obstacle");
-                  cell.classList.add("start");
-                  updateCoordinates(placementType, cellX, cellY);
-                  break;
-                case "goal":
-                  clearStartOrGoal();
-                  cell.classList.remove("start", "obstacle");
-                  cell.classList.add("goal");
-                  updateCoordinates(placementType, cellX, cellY);
-                  break;
-                case "obstacles":
-                  cell.classList.remove("start", "goal");
-                  cell.classList.add("obstacle");
-                  break;
-                default:
-                  // Default case, do nothing
-                  break;
-              }
-            }
-          });
-
-        // Event listener for start search button
-        document
-          .getElementById("btnStartSearch")
-          .addEventListener("click", () => {
-            const searchAlgorithmSelect =
-              document.getElementById("searchAlgorithm").value;
-            const startCell = document.querySelector(".start");
-            const goalCell = document.querySelector(".goal");
-            const gridCells = document.querySelectorAll(".grid-cell");
-            const obstacleCells = document.querySelectorAll(".obstacle");
-            const searchDelay = getSearchDelay();
-            const neighborOrientation = document.getElementById(
-              "neighborOrientation"
-            ).value;
-
-            console.log("searchAlgorithmSelect: ", searchAlgorithmSelect);
-            console.log("startCell: ", startCell);
-            console.log("goalCell: ", goalCell);
-            // console.log("gridCells: ", gridCells);
-            // console.log("obstacleCells: ", obstacleCells);
-
-            if (!startCell || !goalCell) {
-              alert("Please set both start and goal positions.");
-              return;
-            } else {
-              if (searchAlgorithmSelect === SEARCH_ALGORITHMS.BFS) {
-                // bfs
-                runBFS(
-                  startCell,
-                  goalCell,
-                  gridCells,
-                  obstacleCells,
-                  searchDelay,
-                  neighborOrientation
-                );
-              } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.DFS) {
-                // dfs
-              } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.ASTAR) {
-                // aStar
-              } else {
-                alert("The chosen algorithm is not implemented.");
-              }
-            }
-          });
-
-        document
-          .getElementById("btnResetGrid")
-          .addEventListener("click", () => {
-            stopExecution();
-            generateGrid();
-          });
-        // ---------------------------
-        // Generates grid on page load
-        generateGrid();
-        // ---------------------------
       });
-    </script>
-  </head>
-  <body>
-    <div class="container">
-      <img src="logo.png" alt="Logo" class="logo" />
-      <!-- Left Sidebar -->
-      <aside>
-        <h2>Search Setup</h2>
-        <div class="aside-row">
-          <label for="xSize">Grid Size:</label>
-          <div class="grid-inputs">
-            <input type="number" id="xSize" value="30" min="1" />
-            <span>X</span>
-            <input type="number" id="ySize" value="30" min="1" />
-          </div>
-        </div>
-        <div class="aside-row">
-          <button id="btnGridGenerator">Generate Grid</button>
-        </div>
-        <div class="aside-row">
-          <div class="placing-ct">
-            <button class="btn-placing blue" data-placement-type="start">
-              Place Start
-            </button>
-            <div>
-              <span id="startX">0</span>
-              <span>,</span>
-              <span id="startY">0</span>
-            </div>
-          </div>
 
-          <div class="placing-ct">
-            <button class="btn-placing red" data-placement-type="goal">
-              Place Goal
-            </button>
-            <div>
-              <span id="goalX">30</span>
-              <span>,</span>
-              <span id="goalY">30</span>
-            </div>
-          </div>
-          <span class="hints">
-            Click the button and then the cell you want to set as the start or
-            goal.
-          </span>
-          <button class="btn-placing gray" data-placement-type="obstacles">
-            Place Obstacles
+      // Event listener to start drawing when mouse button is pressed
+      document
+        .getElementById("gridContainer")
+        .addEventListener("mousedown", () => {
+          mouseIsPressed = true;
+        });
+      // Event listener to stop drawing when mouse button is released
+      document.addEventListener("mouseup", () => {
+        mouseIsPressed = false;
+      });
+      // Event listener for mousemove to draw obstacles while moving the mouse
+      document
+        .getElementById("gridContainer")
+        .addEventListener("mousemove", (e) => {
+          const cell = e.target;
+          if (cell.classList.contains("grid-cell")) {
+            drawObstacle(cell, e.buttons);
+          }
+        });
+
+      // Event listener for mouse right-click (contextmenu)
+      document
+        .getElementById("gridContainer")
+        .addEventListener("contextmenu", (e) => {
+          // Prevent the context menu from appearing
+          e.preventDefault();
+          const cell = e.target;
+          if (cell.classList.contains("grid-cell")) {
+            cell.classList.remove("obstacle");
+          }
+        });
+
+      document
+        .getElementById("gridContainer")
+        .addEventListener("click", (e) => {
+          const cell = e.target;
+          if (cell.classList.contains("grid-cell")) {
+            // Set the background color based on the placement type
+            const cellX = cell.getAttribute("cell-X");
+            const cellY = cell.getAttribute("cell-Y");
+            switch (placementType) {
+              case "start":
+                clearStartOrGoal();
+                cell.classList.remove("goal", "obstacle");
+                cell.classList.add("start");
+                updateCoordinates(placementType, cellX, cellY);
+                break;
+              case "goal":
+                clearStartOrGoal();
+                cell.classList.remove("start", "obstacle");
+                cell.classList.add("goal");
+                updateCoordinates(placementType, cellX, cellY);
+                break;
+              case "obstacles":
+                cell.classList.remove("start", "goal");
+                cell.classList.add("obstacle");
+                break;
+              default:
+                // Default case, do nothing
+                break;
+            }
+          }
+        });
+
+      // Event listener for start search button
+      document
+        .getElementById("btnStartSearch")
+        .addEventListener("click", () => {
+          const searchAlgorithmSelect =
+            document.getElementById("searchAlgorithm").value;
+          const startCell = document.querySelector(".start");
+          const goalCell = document.querySelector(".goal");
+          const gridCells = document.querySelectorAll(".grid-cell");
+          const obstacleCells = document.querySelectorAll(".obstacle");
+          const searchDelay = getSearchDelay();
+          const neighborOrientation = document.getElementById(
+            "neighborOrientation"
+          ).value;
+
+          console.log("searchAlgorithmSelect: ", searchAlgorithmSelect);
+          console.log("startCell: ", startCell);
+          console.log("goalCell: ", goalCell);
+          // console.log("gridCells: ", gridCells);
+          // console.log("obstacleCells: ", obstacleCells);
+
+          if (!startCell || !goalCell) {
+            alert("Please set both start and goal positions.");
+            return;
+          } else {
+            if (searchAlgorithmSelect === SEARCH_ALGORITHMS.BFS) {
+              // bfs
+              runBFS(
+                startCell,
+                goalCell,
+                gridCells,
+                obstacleCells,
+                searchDelay,
+                neighborOrientation
+              );
+            } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.DFS) {
+              // dfs
+            } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.ASTAR) {
+              runAstar(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation);
+            } else {
+              alert("The chosen algorithm is not implemented.");
+            }
+          }
+        });
+
+      document
+        .getElementById("btnResetGrid")
+        .addEventListener("click", () => {
+          stopExecution();
+          generateGrid();
+        });
+      // ---------------------------
+      // Generates grid on page load
+      generateGrid();
+      // ---------------------------
+    });
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <img src="logo.png" alt="Logo" class="logo" />
+    <!-- Left Sidebar -->
+    <aside>
+      <h2>Search Setup</h2>
+      <div class="aside-row">
+        <label for="xSize">Grid Size:</label>
+        <div class="grid-inputs">
+          <input type="number" id="xSize" value="30" min="1" />
+          <span>X</span>
+          <input type="number" id="ySize" value="30" min="1" />
+        </div>
+      </div>
+      <div class="aside-row">
+        <button id="btnGridGenerator">Generate Grid</button>
+      </div>
+      <div class="aside-row">
+        <div class="placing-ct">
+          <button class="btn-placing blue" data-placement-type="start">
+            Place Start
           </button>
-          <span class="hints">
-            To add obstacles, use the left click, to remove, use the right
-            click. You can drag the mouse.
-          </span>
-          <span class="hints small"
-            >Sometimes, the drag becomes buggy. I don't know why.</span
-          >
+          <div>
+            <span id="startX">0</span>
+            <span>,</span>
+            <span id="startY">0</span>
+          </div>
         </div>
-        <div class="aside-row">
-          <label for="inputTimeout">Search Delay:</label>
-          <input type="number" id="inputTimeout" value="25" min="1" />
-          <span>ms</span>
+
+        <div class="placing-ct">
+          <button class="btn-placing red" data-placement-type="goal">
+            Place Goal
+          </button>
+          <div>
+            <span id="goalX">30</span>
+            <span>,</span>
+            <span id="goalY">30</span>
+          </div>
         </div>
-        <div class="aside-row">
-          <label for="neighborOrientation">Type of Neighbor:</label>
-          <select id="neighborOrientation">
-            <option value="direct">Direct (No diagonals)</option>
-            <option value="indirect">Indirect (With Diagonals)</option>
-          </select>
-        </div>
-        <div class="aside-row">
-          <label for="searchAlgorithm">Algorithm:</label>
-          <select id="searchAlgorithm">
-            <option value="bfs">Breadth-First Search</option>
-            <option value="dfs">Depth-First Search</option>
-            <option value="aStar">A Star (A*)</option>
-            <option value="dijkstra">Dijkstra</option>
-          </select>
-        </div>
-        <div class="aside-row__col">
-          <button id="btnStartSearch">Start Search</button>
-          <button id="btnResetGrid">Reset!</button>
-        </div>
-      </aside>
-      <!-- Main Grid Container -->
-      <main>
-        <!-- Grid Container -->
-        <div class="grid-container" id="gridContainer">
-          <!-- Grid cells will be generated here -->
-        </div>
-      </main>
-    </div>
-  </body>
+        <span class="hints">
+          Click the button and then the cell you want to set as the start or
+          goal.
+        </span>
+        <button class="btn-placing gray" data-placement-type="obstacles">
+          Place Obstacles
+        </button>
+        <span class="hints">
+          To add obstacles, use the left click, to remove, use the right
+          click. You can drag the mouse.
+        </span>
+        <span class="hints small">Sometimes, the drag becomes buggy. I don't know why.</span>
+      </div>
+      <div class="aside-row">
+        <label for="inputTimeout">Search Delay:</label>
+        <input type="number" id="inputTimeout" value="25" min="0" step="5" />
+        <span>ms</span>
+      </div>
+      <div class="aside-row">
+        <label for="neighborOrientation">Type of Neighbor:</label>
+        <select id="neighborOrientation">
+          <option value="direct">Direct (No diagonals)</option>
+          <option value="indirect">Indirect (With Diagonals)</option>
+        </select>
+      </div>
+      <div class="aside-row">
+        <label for="searchAlgorithm">Algorithm:</label>
+        <select id="searchAlgorithm">
+          <option value="bfs">Breadth-First Search</option>
+          <option value="dfs">Depth-First Search</option>
+          <option value="aStar">A Star (A*)</option>
+          <option value="dijkstra">Dijkstra</option>
+        </select>
+      </div>
+      <div class="aside-row__col">
+        <button id="btnStartSearch">Start Search</button>
+        <button id="btnResetGrid">Reset!</button>
+      </div>
+    </aside>
+    <!-- Main Grid Container -->
+    <main>
+      <!-- Grid Container -->
+      <div class="grid-container" id="gridContainer">
+        <!-- Grid cells will be generated here -->
+      </div>
+    </main>
+  </div>
+</body>
+
 </html>
