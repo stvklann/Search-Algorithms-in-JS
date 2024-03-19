@@ -46,8 +46,8 @@
 
     aside {
       min-height: inherit;
-      min-width: 240px;
-      width: 240px;
+      min-width: 254px;
+      width: 254px;
       padding: 0 20px 20px 0;
       border-right: 1px solid #ccc;
     }
@@ -119,8 +119,23 @@
       transition: background-color 300ms;
     }
 
+    .button-disabled {
+      pointer-events: none;
+      opacity: 0.5;
+      cursor: default;
+      background-color: gray;
+    }
+
     button:hover {
       background-color: #cc7c00;
+    }
+
+    #obstaclePositions {
+      height: 28px;
+    }
+
+    #btnGridGenerator {
+      transform: translateX(88px);
     }
 
     .placing-ct {
@@ -604,6 +619,23 @@
         }
       }
 
+      function drawObstaclesFromString(obstaclePositions) {
+        const positions = obstaclePositions.split(';').map(pos => {
+          // Remove parentheses and split by comma
+          const [x, y] = pos.replace(/\(|\)/g, '').split(',').map(Number);
+          return { x, y };
+        });
+
+        positions.forEach(({ x, y }) => {
+          if (!isNaN(x) && !isNaN(y) && x >= 0 && y >= 0 && x < getXSize() && y < getYSize()) {
+            const cell = getCell(x, y);
+            if (cell && !cell.classList.contains("start") && !cell.classList.contains("goal")) {
+              cell.classList.add("obstacle");
+            }
+          }
+        });
+      }
+
       // Function to clear existing start or goal points
       function clearStartOrGoal() {
         const cells = document.querySelectorAll(".grid-cell");
@@ -634,6 +666,36 @@
         }
       }
 
+      /* 
+        Handling buttons to become disabled or reenabled because of 
+        repeated generation of grid or new runs during current run 
+        that destroys the result
+      */
+      async function handleButtonsAvailability(typeOfAction = 'disable') {
+        const startSearchBtn = document.getElementById("btnStartSearch");
+        const gridGeneratorBtn = document.getElementById("btnGridGenerator");
+
+        if (typeOfAction === 'disable') {
+          // Disable the Generate Grid button because it bugs the search
+          document.getElementById("btnGridGenerator").disabled = true;
+          document.getElementById("btnGridGenerator").classList.add("button-disabled");
+
+          // Disable the Generate Grid button because it bugs the search
+          document.getElementById("btnGridGenerator").disabled = true;
+          document.getElementById("btnStartSearch").classList.add("button-disabled");
+        } else {
+          // Disable the Generate Grid button because it bugs the search
+          document.getElementById("btnGridGenerator").disabled = false;
+          document.getElementById("btnGridGenerator").classList.remove("button-disabled");
+
+          // Disable the Generate Grid button because it bugs the search
+          document.getElementById("btnGridGenerator").disabled = false;
+          document.getElementById("btnStartSearch").classList.remove("button-disabled");
+        }
+
+        return;
+      }
+
       // ----------------------------
       // Event Listeners declarations
       // ----------------------------
@@ -641,7 +703,7 @@
       // Event listener for the generate grid button
       document
         .getElementById("btnGridGenerator")
-        .addEventListener("click", () => {
+        .addEventListener("click", async () => {
           // Regenerate the grid when the button is clicked
           generateGrid();
         });
@@ -674,6 +736,12 @@
             drawObstacle(cell, e.buttons);
           }
         });
+
+      // Event listener for obstacle list placement
+      document.getElementById("btnDrawObstacles").addEventListener("click", () => {
+        const obstaclePositions = document.getElementById("obstaclePositions").value;
+        drawObstaclesFromString(obstaclePositions);
+      });
 
       // Event listener for mouse right-click (contextmenu)
       document
@@ -722,7 +790,8 @@
       // Event listener for start search button
       document
         .getElementById("btnStartSearch")
-        .addEventListener("click", () => {
+        .addEventListener("click", async () => {
+
           const searchAlgorithmSelect =
             document.getElementById("searchAlgorithm").value;
           const startCell = document.querySelector(".start");
@@ -744,9 +813,11 @@
             alert("Please set both start and goal positions.");
             return;
           } else {
+            handleButtonsAvailability("disable");
+
             if (searchAlgorithmSelect === SEARCH_ALGORITHMS.BFS) {
               // bfs
-              runBFS(
+              await runBFS(
                 startCell,
                 goalCell,
                 gridCells,
@@ -754,13 +825,16 @@
                 searchDelay,
                 neighborOrientation
               );
-            } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.DFS) {
-              // dfs
             } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.ASTAR) {
-              runAStar(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation);
+              await runAStar(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation);
+              // } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.DFS) {
+              // dfs
             } else {
               alert("The chosen algorithm is not implemented.");
             }
+
+            // Reenables the buttons
+            handleButtonsAvailability("enable");
           }
         });
 
@@ -784,8 +858,8 @@
     <!-- Left Sidebar -->
     <aside>
       <h2>Search Setup</h2>
-      <div class="aside-row">
-        <label for="xSize">Grid Size:</label>
+      <div class="aside-row__col">
+        <label style="margin: 0;" for="xSize">Grid Size:</label>
         <div class="grid-inputs">
           <input type="number" id="xSize" value="30" min="1" />
           <span>X</span>
@@ -821,6 +895,16 @@
           Click the button and then the cell you want to set as the start or
           goal.
         </span>
+        <div class="aside-row">
+          <label for="obstaclePositions">Obstacle Positions:</label>
+          <div class="grid-inputs aside-row__col">
+            <input type="text" id="obstaclePositions" placeholder="(x_1,y_1);(x_2,y_2);..." style="width: 70%;" />
+            <button id="btnDrawObstacles" class="btn-placing gray">Draw</button>
+          </div>
+          <span class="hints">
+            (x,y) pairs separated by semicolons.
+          </span>
+        </div>
         <button class="btn-placing gray" data-placement-type="obstacles">
           Place Obstacles
         </button>
