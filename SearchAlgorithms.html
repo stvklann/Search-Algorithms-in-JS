@@ -334,6 +334,10 @@
         }
       }
 
+      async function runDFS(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation) {
+
+      }
+
       async function runAStar(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation) {
         // Cell Priority Queue for A*
         const openSet = new PriorityQueue();
@@ -723,7 +727,7 @@
       }
 
       async function remakeGrid(keepObstacles = true) {
-        const {startCell, goalCell, gridCells, obstacleCells} = getTableState()
+        const { startCell, goalCell, gridCells, obstacleCells } = getTableState()
         // Clear the grid of all states except the base 'grid-cell' class
         gridCells.forEach(cell => {
           cell.classList = 'grid-cell'; // Reset the class to only include 'grid-cell'
@@ -877,7 +881,7 @@
         .getElementById("btnStartSearch")
         .addEventListener("click", async () => {
 
-          const {startCell, goalCell, gridCells, obstacleCells} = getTableState()
+          const { startCell, goalCell, gridCells, obstacleCells } = getTableState()
 
           const searchAlgorithmSelect =
             document.getElementById("searchAlgorithm").value;
@@ -982,7 +986,7 @@
         <div class="aside-row">
           <!-- Obstacles by string -->
           <div class="grid-inputs aside-row__col ">
-            <label for="obstaclesString">Obstacles by string:</label>
+            <label for="obstaclesString">Obstacles by String:</label>
             <input type="text" id="obstaclesString" class="obstacle-select" placeholder="(x_1,y_1);(x_2,y_2);..." />
             <button id="btnDrawObstacles" class="btn-placing gray">Draw</button>
           </div>
@@ -1031,7 +1035,7 @@
         <label for="searchAlgorithm">Algorithm:</label>
         <select id="searchAlgorithm">
           <option value="bfs">Breadth-First Search</option>
-          <!-- <option value="dfs">Depth-First Search</option> -->
+          <option value="dfs">Depth-First Search</option>
           <option value="aStar">A Star (A*)</option>
         </select>
       </div>
