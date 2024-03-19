@@ -653,6 +653,7 @@
         });
       }
 
+
       // Function to update start or goal coordinates
       function updateCoordinates(type, x, y) {
         if (type === "start") {
@@ -667,6 +668,23 @@
           document.getElementById("goalY").textContent = goalY;
         }
       }
+
+      async function remakeGrid(startCell, goalCell, gridCells, obstacleCells) {
+        // Clear the grid of all states except the base 'grid-cell' class
+        gridCells.forEach(cell => {
+          cell.classList = 'grid-cell'; // Reset the class to only include 'grid-cell'
+        });
+
+        // Re-apply the 'start' and 'goal' classes to the respective cells
+        if (startCell) startCell.classList.add('start');
+        if (goalCell) goalCell.classList.add('goal');
+
+        // Re-apply the 'obstacle' class to all obstacle cells
+        obstacleCells.forEach(cell => {
+          cell.classList.add('obstacle');
+        });
+      }
+
 
       /* 
         Handling buttons to become disabled or reenabled because of 
@@ -815,23 +833,23 @@
             alert("Please set both start and goal positions.");
             return;
           } else {
+            remakeGrid(startCell, goalCell, gridCells, obstacleCells);
             handleButtonsAvailability("disable");
 
+            // BFS
             if (searchAlgorithmSelect === SEARCH_ALGORITHMS.BFS) {
-              // bfs
-              await runBFS(
-                startCell,
-                goalCell,
-                gridCells,
-                obstacleCells,
-                searchDelay,
-                neighborOrientation
-              );
-            } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.ASTAR) {
+              await runBFS(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation);
+            }
+            // A Star
+            else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.ASTAR) {
               await runAStar(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation);
-              // } else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.DFS) {
-              // dfs
-            } else {
+            }
+            // DFS
+            else if (searchAlgorithmSelect === SEARCH_ALGORITHMS.DFS) {
+              await runDFS(startCell, goalCell, gridCells, obstacleCells, searchDelay, neighborOrientation)
+            }
+            // Not Found
+            else {
               alert("The chosen algorithm is not implemented.");
             }
 
